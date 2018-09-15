@@ -1,2 +1,2 @@
 # jquery-haalish-time-period-select
-Jquery Time Period Select
+Jquery Haalish Time Period Select

@@ -1,0 +1,14 @@
+{
+  "name": "jquery-haalish-time-period-select",
+  "version": "1.0.0",
+  "description": "Time Period Select",
+  "main": "jquery-haalish-time-period-select.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jquery": "^3.3.6"
+  }
+}

@@ -33,15 +33,14 @@
         this.html(periodsTable);
         this.append("<input name='selected-" + this.attr("id") + "' />");
 
-        selectEventLoad(this);
+        selectEventInit(this);
     }
 
     $.fn.haalishTimePeriodSelect.defaults = {
         startDate: new Date(),
         endDate: moment(new Date()).add(15, 'days').toDate(),
         startHour: 8,
-        endHour: 18,
-        onSelectStart: function (e) { }
+        endHour: 18
     };
 
     $.fn.haalishTimePeriodSelect.defaults.locale = {
@@ -53,7 +52,7 @@
         return moment(number, 'HH').format('HH:mm')
     }
 
-    function selectEventLoad(haalish) {
+    function selectEventInit(haalish) {
         var table = $(haalish).find("table.periods-table");
         var isMouseDown = false;
         var isSelected = false;
@@ -66,37 +65,33 @@
         $('.haalish').unbind("selectstart");
 
         $('.haalish').on("mousedown", ".periods-table td", function (e) {
+            if (e.which !== 1) return false;
+
             isMouseDown = true;
 
             var cell = $(this);
             isSelected = cell.hasClass("selected");
 
             if (isSelected) {
-                cell.removeClass("selected");
+                cell.addClass("remove-selected").removeClass("selected");
             } else {
                 cell.addClass("new-selected");
             }
 
-
             startCellIndex = cell.index();
             startRowIndex = cell.parent().index();
-
-            // if (options.onSelectStart !== undefined) {
-            //     options.onSelectStart(e);
-            // }
-        });
-
-        $('.haalish').on("mouseup", ".periods-table td", function (e) {
-            isMouseDown = false;
-
-            table.find(".new-selected").addClass("selected").removeClass("new-selected");
         });
 
         $(".haalish").on("mouseover", ".periods-table", function (e) {
             if (!isMouseDown) return;
 
             if ($(e.target).is("td")) {
-                table.find(".new-selected").removeClass("new-selected");
+                if (isSelected) {
+                    table.find(".remove-selected").removeClass("remove-selected").addClass("selected");
+                } else {
+                    table.find(".new-selected").removeClass("new-selected");
+                }
+
                 selectTo(table, $(e.target), startRowIndex, startCellIndex, isSelected);
             }
         });
@@ -104,9 +99,16 @@
         $(".haalish").bind("selectstart", function () {
             return false;
         });
+
+        $(document).mouseup(function () {
+            isMouseDown = false;
+
+            table.find(".new-selected").addClass("selected").removeClass("new-selected");
+            table.find(".remove-selected").removeClass("remove-selected");
+        });
     }
 
-    // Reference: https://stackoverflow.com/a/2014097
+    // Reference: https://stackoverflow.com/a/31876373
     function selectTo(table, cell, startRowIndex, startCellIndex, isSelected) {
         var row = cell.parent();
         var cellIndex = cell.index();
@@ -134,12 +136,19 @@
             var rowCells = table.find("tr").eq(i).find("td");
             for (var j = cellStart; j <= cellEnd; j++) {
                 if (isSelected) {
+                    if (rowCells.eq(j).hasClass("selected")) {
+                        rowCells.eq(j).addClass("remove-selected")
+                    }
                     rowCells.eq(j).removeClass("selected");
                 } else {
                     rowCells.eq(j).addClass("new-selected");
                 }
             }
         }
+    }
+
+    function getJsonValue() {
+
     }
 })(jQuery);
 

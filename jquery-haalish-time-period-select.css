@@ -17,7 +17,6 @@
 }
 
 .haalish .periods-table td:hover{
-    background: #f2f2f2;
     cursor: pointer;
 }
 
@@ -27,4 +26,8 @@
 
 .haalish .periods-table td.selected{
     background: #3ac5ac;
+}
+
+.haalish .periods-table td.remove-selected{
+    background: #f2f2f2;
 }

@@ -29,9 +29,9 @@
 
         periodsTable += "</table>";
 
-
         this.addClass("haalish");
         this.html(periodsTable);
+        this.append("<input name='selected-" + this.attr("id") + "' />");
 
         selectEventLoad(this);
     }
@@ -56,6 +56,7 @@
     function selectEventLoad(haalish) {
         var table = $(haalish).find("table.periods-table");
         var isMouseDown = false;
+        var isSelected = false;
         var startRowIndex = null;
         var startCellIndex = null;
 
@@ -68,8 +69,15 @@
             isMouseDown = true;
 
             var cell = $(this);
+            isSelected = cell.hasClass("selected");
 
-            cell.addClass("new-selected");
+            if (isSelected) {
+                cell.removeClass("selected");
+            } else {
+                cell.addClass("new-selected");
+            }
+
+
             startCellIndex = cell.index();
             startRowIndex = cell.parent().index();
 
@@ -89,7 +97,7 @@
 
             if ($(e.target).is("td")) {
                 table.find(".new-selected").removeClass("new-selected");
-                selectTo(table, $(e.target), startRowIndex, startCellIndex);
+                selectTo(table, $(e.target), startRowIndex, startCellIndex, isSelected);
             }
         });
 
@@ -99,7 +107,7 @@
     }
 
     // Reference: https://stackoverflow.com/a/2014097
-    function selectTo(table, cell, startRowIndex, startCellIndex) {
+    function selectTo(table, cell, startRowIndex, startCellIndex, isSelected) {
         var row = cell.parent();
         var cellIndex = cell.index();
         var rowIndex = row.index();
@@ -125,7 +133,11 @@
         for (var i = rowStart; i <= rowEnd; i++) {
             var rowCells = table.find("tr").eq(i).find("td");
             for (var j = cellStart; j <= cellEnd; j++) {
-                rowCells.eq(j).addClass("new-selected");
+                if (isSelected) {
+                    rowCells.eq(j).removeClass("selected");
+                } else {
+                    rowCells.eq(j).addClass("new-selected");
+                }
             }
         }
     }

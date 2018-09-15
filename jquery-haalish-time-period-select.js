@@ -7,21 +7,33 @@
             opts.locale = $.extend({}, $.fn.haalishTimePeriodSelect.defaults.locale, options.locale);
         }
 
-        var momentStartDate = moment(opts.startDate);
-        var momentEndDate = moment(opts.endDate);
-        var dayCount = momentEndDate.diff(momentStartDate, "day");
+        if (opts.hourSlot !== 1 && opts.hourSlot !== 0.5 && opts.hourSlot !== 0.25) {
+            opts.hourSlot = 1;
+        }
+
+        var dayCount = moment(opts.endDate).diff(moment(opts.startDate), "day");
         var hourCount = opts.endHour - opts.startHour;
+
+        if (opts.hourSlot === 0.5) {
+            hourCount *= 2;
+        } else if (opts.hourSlot === 0.25) {
+            hourCount *= 4;
+        }
 
         var periodsTable = "<table class='periods-table'>";
 
-        for (var dayIndex = 0; dayIndex < hourCount; dayIndex++) {
+        for (var hourIndex = 0; hourIndex < hourCount; hourIndex++) {
             periodsTable += "<tr>";
 
-            for (var hourIndex = 0; hourIndex < dayCount; hourIndex++) {
-                var timeTitle = (numberToHourFormat(opts.startHour + dayIndex)) + " - " +
-                    (numberToHourFormat(opts.startHour + dayIndex + 1));
+            for (var dayIndex = 0; dayIndex < dayCount; dayIndex++) {
+                var startTime = opts.startHour + (hourIndex * opts.hourSlot);
+                var endTime = opts.startHour + opts.hourSlot + (hourIndex * opts.hourSlot);
+                var startDate = moment(opts.startDate).add(dayIndex, "day");
+                var startNumberDate = numberToDate(startDate, startTime);
+                var endNumberDate = numberToDate(startDate, endTime);
+                var timeTitle = moment(startNumberDate).format("dddd, HH:mm") + " - " + moment(endNumberDate).format("HH:mm");
 
-                periodsTable += "<td data-index-x='" + hourIndex + "' data-index-y='" + dayIndex + "' title='" + timeTitle + "'></td>";
+                periodsTable += "<td data-date='" + startNumberDate + "' title='" + timeTitle + "'></td>";
             }
 
             periodsTable += "</tr>";
@@ -31,16 +43,17 @@
 
         this.addClass("haalish");
         this.html(periodsTable);
-        this.append("<input name='selected-" + this.attr("id") + "' />");
+        this.append("<input style='display: none;' name='" + this.attr("id") + "-value' />");
 
         selectEventInit(this);
     }
 
     $.fn.haalishTimePeriodSelect.defaults = {
         startDate: new Date(),
-        endDate: moment(new Date()).add(15, 'days').toDate(),
+        endDate: moment(new Date()).add(15, "days").toDate(),
         startHour: 8,
-        endHour: 18
+        endHour: 18,
+        hourSlot: 1
     };
 
     $.fn.haalishTimePeriodSelect.defaults.locale = {
@@ -48,8 +61,16 @@
         cancelLabel: "Cancel"
     };
 
-    function numberToHourFormat(number) {
-        return moment(number, 'HH').format('HH:mm')
+    function numberToDate(date, number) {
+        var time = moment.utc(number * 3600 * 1000);
+
+        date.set({
+            hour: time.get("hour"),
+            minute: time.get("minute"),
+            second: 0
+        });
+
+        return date.toDate();
     }
 
     function selectEventInit(haalish) {
@@ -105,6 +126,8 @@
 
             table.find(".new-selected").addClass("selected").removeClass("new-selected");
             table.find(".remove-selected").removeClass("remove-selected");
+
+            $("input[name='" + haalish.attr("id") + "-value']").val(getJsonValue());
         });
     }
 
@@ -148,7 +171,12 @@
     }
 
     function getJsonValue() {
+        var dateArray = [];
+        $(".periods-table").find(".selected").each(function (i, e) {
+            dateArray.push($(e).data("date"));
+        });
 
+        return JSON.stringify(dateArray);
     }
 })(jQuery);
 

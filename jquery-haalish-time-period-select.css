@@ -20,3 +20,11 @@
     background: #f2f2f2;
     cursor: pointer;
 }
+
+.haalish .periods-table td.new-selected{
+    background: #7be2d0;
+}
+
+.haalish .periods-table td.selected{
+    background: #3ac5ac;
+}

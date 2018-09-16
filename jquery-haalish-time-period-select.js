@@ -22,28 +22,62 @@
 
         var periodsTable = "<table class='periods-table'>";
 
-        for (var hourIndex = 0; hourIndex < hourCount; hourIndex++) {
+        for (var hourIndex = -1; hourIndex < hourCount; hourIndex++) {
             periodsTable += "<tr>";
 
-            for (var dayIndex = 0; dayIndex < dayCount; dayIndex++) {
-                var startTime = opts.startHour + (hourIndex * opts.hourSlot);
-                var endTime = opts.startHour + opts.hourSlot + (hourIndex * opts.hourSlot);
-                var startDate = moment(opts.startDate).add(dayIndex, "day");
-                var startNumberDate = numberToDate(startDate, startTime);
-                var endNumberDate = numberToDate(startDate, endTime);
-                var timeTitle = moment(startNumberDate).format("dddd, HH:mm") + " - " + moment(endNumberDate).format("HH:mm");
+            for (var dayIndex = -1; dayIndex < dayCount; dayIndex++) {
+                if (hourIndex != -1 && dayIndex != -1) {
 
-                periodsTable += "<td data-date='" + startNumberDate + "' title='" + timeTitle + "'></td>";
+                    var startTime = opts.startHour + (hourIndex * opts.hourSlot);
+                    var endTime = opts.startHour + opts.hourSlot + (hourIndex * opts.hourSlot);
+                    var startDate = moment(opts.startDate).add(dayIndex, "day");
+                    var startNumberDate = numberToDate(startDate, startTime);
+                    var endNumberDate = numberToDate(startDate, endTime);
+                    var timeTitle = moment(startNumberDate).format("DD MMM ddd, HH:mm") + " - " + moment(endNumberDate).format("HH:mm");
+
+                    periodsTable += "<td data-date='" + startNumberDate + "' title='" + timeTitle + "'></td>";
+                } else {
+                    if (hourIndex == -1) {
+                        periodsTable += "<td class='disable-select disable-row'></td>";
+                    } else {
+                        periodsTable += "<td class='disable-select disable-column'></td>";
+                    }
+                }
             }
 
             periodsTable += "</tr>";
         }
+
 
         periodsTable += "</table>";
 
         this.addClass("haalish");
         this.html(periodsTable);
         this.append("<input style='display: none;' name='" + this.attr("id") + "-value' />");
+
+
+        var that = this;
+        $(this).find(".periods-table tr").eq(1).find("td").each(function (i, e) {
+            var title = $(e).attr("title");
+
+            if (title && title.indexOf(",") != -1) {
+                $(that).find(".periods-table tr").eq(0).find("td").eq(i).html(title.split(",")[0]);
+            } else {
+                $(that).find(".periods-table tr").eq(0).find("td").eq(i).html("");
+            }
+        });
+
+        $(this).find(".periods-table tr").each(function (i, e) {
+
+
+            var title = $(e).find("td").eq(1).attr("title");
+
+            if (title && title.indexOf(",") != -1) {
+                $(e).find("td").eq(0).html(title.split(",")[1].trim());
+            } else {
+                $(e).find("td").eq(0).html("");
+            }
+        });
 
         selectEventInit(this);
     }
@@ -80,17 +114,19 @@
         var startRowIndex = null;
         var startCellIndex = null;
 
-        $('.haalish').unbind("mousedown");
-        $('.haalish').unbind("mouseup");
-        $('.haalish').unbind("mouseover");
-        $('.haalish').unbind("selectstart");
+        $(haalish).unbind("mousedown");
+        $(haalish).unbind("mouseup");
+        $(haalish).unbind("mouseover");
+        $(haalish).unbind("selectstart");
 
-        $('.haalish').on("mousedown", ".periods-table td", function (e) {
+        $(haalish).on("mousedown", ".periods-table td", function (e) {
             if (e.which !== 1) return false;
 
-            isMouseDown = true;
-
             var cell = $(this);
+
+            if (cell.hasClass("disable-select")) return false;
+
+            isMouseDown = true;
             isSelected = cell.hasClass("selected");
 
             if (isSelected) {
@@ -103,10 +139,12 @@
             startRowIndex = cell.parent().index();
         });
 
-        $(".haalish").on("mouseover", ".periods-table", function (e) {
+        $(haalish).on("mouseover", ".periods-table", function (e) {
             if (!isMouseDown) return;
 
             if ($(e.target).is("td")) {
+                if ($(e.target).hasClass("disable-select")) return false;
+
                 if (isSelected) {
                     table.find(".remove-selected").removeClass("remove-selected").addClass("selected");
                 } else {
@@ -117,7 +155,7 @@
             }
         });
 
-        $(".haalish").bind("selectstart", function () {
+        $(haalish).bind("selectstart", function () {
             return false;
         });
 
